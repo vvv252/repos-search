@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap" rel="stylesheet">
+	<title>Поиск репозиториев github</title>
+	<link rel="stylesheet" href="main.css">
+</head>
+<body>
+	<div class="container">
+		<form onsubmit="event.preventDefault();">
+			<label>
+				Название репозитория<input id="repos__id" type="text">
+			</label>
+			<input id="btn_search" class="btn" type="submit" value="Отправить" onclick="reposSearch()"/>
+		</form>
+		<div id="error"></div>
+	</div>
+	<script>
+		async function reposSearch() {
+			//name, forks, score, owner.login SDFKJHSFLSDLFKJWPOFJ$@(32442
+			let reposSearch = document.getElementById("repos__id");
+			fetch(`https://api.github.com/search/repositories?q=${reposSearch.value}`)
+				.then(response => response = response.json())
+				.then(function (data) {
+					const repositories = document.getElementsByClassName("repository");
+				    while(repositories.length > 0){
+				        repositories[0].remove();
+				    }
+
+					console.log(data.items[0]);
+
+					if(data.items.length === 0) {
+						error.innerHTML = "Ничего не найдено.";
+						return;
+					}
+					
+					error.innerHTML = "";
+					for(let i = 0; i < data.items.length; i++) {
+						let repos = data.items[i];
+						let container = document.getElementsByClassName("container")[0];
+
+						let repository = document.createElement("div");
+						repository.setAttribute("class", "repository");
+
+						let repository__name = document.createElement("p");
+						repository__name.innerHTML = (i + 1) + ") "
+
+						let link = document.createElement("a");
+						link.innerHTML = repos.full_name;
+						link.setAttribute("href", repos.html_url);
+						link.setAttribute("target", "_blank");
+
+						let repository__owner = document.createElement("p");
+						repository__owner.setAttribute("class", "repository__owner");
+						repository__owner.innerHTML = "Owner: " + repos.owner.login;	
+						
+						let repository__forks = document.createElement("p");
+						repository__forks.setAttribute("class", "repository__forks");
+						repository__forks.innerHTML = "Forks: " + repos.forks;
+
+						let repository__score = document.createElement("p");
+						repository__score.setAttribute("class", "repository__score");
+						repository__score.innerHTML = "Score: " + repos.score;
+
+						repository__name.appendChild(link);
+						repository.appendChild(repository__name);
+						repository.appendChild(repository__owner);
+						repository.appendChild(repository__forks);
+						repository.appendChild(repository__score);
+						container.appendChild(repository);
+					}
+				})
+				.catch(function(err) {
+					error.innerHTML = "Запрос не выполнен.";
+					const repositories = document.getElementsByClassName("repository");
+				    while(repositories.length > 0){
+				        repositories[0].remove();
+				    }
+				});
+
+		}
+
+	</script>
+</body>
+</html>
